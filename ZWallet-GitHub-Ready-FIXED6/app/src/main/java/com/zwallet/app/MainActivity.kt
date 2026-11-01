@@ -47,6 +47,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.zwallet.app.data.*
+import com.zwallet.app.ui.CardsScreen
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -219,7 +220,7 @@ fun WalletScreen(vm: WalletViewModel) {
     Scaffold(
         containerColor = Bg,
         floatingActionButton = {
-            FloatingActionButton(
+            if (tab != 1) FloatingActionButton(
                 onClick = { if (cards.isNotEmpty()) { selectedCard = cards.first(); showTransaction = true } else showAddCard = true },
                 containerColor = Accent, contentColor = Color.White
             ) { Icon(Icons.Rounded.Add, contentDescription = "Tambah transaksi") }
@@ -232,7 +233,7 @@ fun WalletScreen(vm: WalletViewModel) {
             }
         }
     ) { padding ->
-        LazyColumn(
+        if (tab == 1) CardsScreen(Modifier.fillMaxSize().padding(padding)) else LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 22.dp, bottom = 100.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)

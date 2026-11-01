@@ -21,6 +21,11 @@ Aplikasi Android pencatat saldo, pemasukan, dan pengeluaran per kartu/dompet. Di
 - ViewModel + Kotlin Coroutines/Flow
 - Gradle Kotlin DSL
 
+## Halaman Kartu
+
+Tab **Kartu** berisi koleksi kartu virtual (simulasi, bukan kartu bank resmi): pilih bank (satu gambar kartu per bank, maks 5 kartu per bank), pilih kartu utama, lihat detail, dan hapus. Data tersimpan lokal.
+Gambar kartu dan logo bank dibaca dari `app/src/main/assets/cards` dan `app/src/main/assets/logos` (nama file = ID bank, lihat `README.txt` di masing-masing folder).
+
 ## Menjalankan project
 
 1. Download atau clone repository ini.
