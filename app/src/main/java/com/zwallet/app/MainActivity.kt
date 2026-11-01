@@ -1,6 +1,20 @@
 package com.zwallet.app
 
 import android.os.Bundle
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.ImeAction
+import kotlinx.coroutines.delay
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -24,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -51,9 +66,24 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val dao = WalletDatabase.get(this).walletDao()
+        val prefs = getSharedPreferences("zwallet_prefs", MODE_PRIVATE)
+        val savedName = prefs.getString("nickname", null)?.takeIf { it.isNotBlank() }
         setContent {
             val vm: WalletViewModel = viewModel(factory = WalletViewModel.factory(dao))
-            ZWalletTheme { WalletScreen(vm) }
+            var showWelcome by remember { mutableStateOf(true) }
+            ZWalletTheme {
+                Crossfade(targetState = showWelcome, animationSpec = tween(500), label = "root") { welcome ->
+                    if (welcome) {
+                        WelcomeScreen(
+                            savedName = savedName,
+                            onNameSaved = { prefs.edit().putString("nickname", it).apply() },
+                            onFinished = { showWelcome = false }
+                        )
+                    } else {
+                        WalletScreen(vm)
+                    }
+                }
+            }
         }
     }
 }
@@ -92,6 +122,86 @@ private fun ZWalletTheme(content: @Composable () -> Unit) {
         ),
         content = content
     )
+}
+
+@Composable
+private fun WelcomeScreen(savedName: String?, onNameSaved: (String) -> Unit, onFinished: () -> Unit) {
+    var name by remember { mutableStateOf(savedName) }
+    var input by remember { mutableStateOf("") }
+    val logoAlpha = remember { Animatable(0f) }
+    val logoScale = remember { Animatable(0.6f) }
+    val inputAlpha = remember { Animatable(0f) }
+    val greetAlpha = remember { Animatable(0f) }
+
+    LaunchedEffect(Unit) {
+        launch { logoAlpha.animateTo(1f, tween(700)) }
+        logoScale.animateTo(1f, spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow))
+        if (savedName == null) inputAlpha.animateTo(1f, tween(500))
+    }
+    LaunchedEffect(name) {
+        if (name != null) {
+            greetAlpha.snapTo(0f)
+            greetAlpha.animateTo(1f, tween(800))
+            delay(1500)
+            onFinished()
+        }
+    }
+
+    val submit: () -> Unit = {
+        val n = input.trim()
+        if (n.isNotEmpty()) { onNameSaved(n); name = n }
+    }
+
+    Box(
+        Modifier.fillMaxSize().background(Bg)
+            .background(Brush.radialGradient(listOf(Color(0x33E5B94A), Color.Transparent))),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 32.dp, vertical = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                painter = painterResource(R.drawable.zwallet_logo),
+                contentDescription = "ZWallet",
+                modifier = Modifier.size(if (name == null) 170.dp else 210.dp).graphicsLayer {
+                    alpha = logoAlpha.value; scaleX = logoScale.value; scaleY = logoScale.value
+                }
+            )
+            Spacer(Modifier.height(28.dp))
+            if (name == null) {
+                Column(
+                    Modifier.graphicsLayer { alpha = inputAlpha.value; translationY = (1f - inputAlpha.value) * 30f },
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text("Selamat datang di ZWallet", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(6.dp))
+                    Text("Siapa nama panggilanmu?", color = Muted, fontSize = 14.sp)
+                    Spacer(Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = input, onValueChange = { if (it.length <= 20) input = it },
+                        label = { Text("Nama panggilan") }, singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = { submit() })
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    Button(onClick = { submit() }, enabled = input.isNotBlank() && inputAlpha.value > 0.9f) { Text("Lanjut") }
+                }
+            } else {
+                Column(
+                    Modifier.graphicsLayer { alpha = greetAlpha.value; translationY = (1f - greetAlpha.value) * 40f },
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        if (savedName != null) "Welcome Back" else "Welcome",
+                        color = Color(0xFFE5B94A), fontSize = 16.sp, fontWeight = FontWeight.Bold, letterSpacing = 3.sp
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Text(name ?: "", fontSize = 32.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -181,6 +291,14 @@ fun WalletScreen(vm: WalletViewModel) {
                     val cardName = cards.firstOrNull { it.id == tx.cardId }?.name ?: "Kartu dihapus"
                     TransactionRow(tx, cardName)
                 }
+            }
+            item {
+                Text(
+                    "Credit: JEPIN666X",
+                    color = Muted, fontSize = 11.sp, letterSpacing = 1.sp,
+                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+                    textAlign = TextAlign.Center
+                )
             }
         }
     }

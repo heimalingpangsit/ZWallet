@@ -46,7 +46,7 @@ Atau dari terminal (jika Gradle tersedia):
 gradle assembleDebug
 ```
 
-> Catatan: repository ini belum menyertakan Gradle Wrapper (`gradlew`). Android Studio dapat melakukan sync/build menggunakan konfigurasi Gradle yang tersedia.
+> Catatan: repository ini belum menyertakan Gradle Wrapper (`gradlew`). Build di GitHub Actions memakai Gradle 8.9 lewat `gradle/actions/setup-gradle`, jadi tidak perlu wrapper.
 
 ## Upload ke GitHub
 
@@ -70,6 +70,10 @@ Ganti URL remote dengan URL repository GitHub kamu.
 - Data disimpan di perangkat. Menghapus data aplikasi atau uninstall dapat menghilangkan data.
 - Menghapus kartu juga menghapus transaksi terkait kartu tersebut.
 - Untuk pengembangan berikutnya, pertimbangkan fitur ekspor/backup, edit/hapus transaksi, dan pengujian database.
+
+## Credit
+
+Dibuat oleh **JEPIN666X**.
 
 ## Lisensi
 
