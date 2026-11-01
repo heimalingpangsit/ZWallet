@@ -1,39 +1,29 @@
 package com.zwallet.app.data
 
 /**
- * Katalog bank dan varian kartu.
- *
- * Gambar kartu dibaca dari  app/src/main/assets/cards/<bank.id>.(png|webp|jpg)
- * Logo bank dibaca dari     app/src/main/assets/logos/<bank.id>.(png|webp|jpg)
- * Jika file belum ada, UI menampilkan placeholder (bukan gambar kartu tiruan).
+ * Daftar bank / e-wallet untuk dialog "Tambah kartu".
+ * assetId = nama file gambar kartu di app/src/main/assets/cards/<assetId>.png
+ * Kalau assetId null, berarti belum ada gambar kartunya (tampil placeholder).
  */
-data class Bank(val id: String, val name: String, val initials: String)
-
-data class CardVariant(val id: String, val bankId: String, val name: String, val description: String)
+data class BankPreset(val label: String, val assetId: String?)
 
 object CardCatalog {
-    val banks = listOf(
-        Bank("bca", "BCA", "BCA"),
-        Bank("mandiri", "Bank Mandiri", "MDR"),
-        Bank("bri", "BRI", "BRI"),
-        Bank("bni", "BNI", "BNI"),
-        Bank("cimb", "CIMB Niaga", "CIMB"),
-        Bank("danamon", "Danamon", "DNM"),
-        Bank("lainnya", "Bank lainnya", "•••")
+    val presets = listOf(
+        BankPreset("BCA", "bca"),
+        BankPreset("Mandiri", "mandiri"),
+        BankPreset("BRI", "bri"),
+        BankPreset("BNI", "bni"),
+        BankPreset("CIMB Niaga", "cimb"),
+        BankPreset("Danamon", "danamon"),
+        BankPreset("Jenius", null),
+        BankPreset("DANA", null),
+        BankPreset("GoPay", null),
+        BankPreset("OVO", null),
+        BankPreset("ShopeePay", null),
+        BankPreset("Lainnya", null)
     )
 
-    // Satu gambar kartu per bank. ID varian = ID bank = nama file di assets/cards.
-    val variants = listOf(
-        CardVariant("bca", "bca", "BCA Xpresi", "Kartu debit virtual BCA."),
-        CardVariant("mandiri", "mandiri", "Kartu Debit Mandiri", "Kartu debit virtual Bank Mandiri."),
-        CardVariant("bri", "bri", "Kartu Debit BRI", "Kartu debit virtual BRI."),
-        CardVariant("bni", "bni", "Kartu Debit BNI", "Kartu debit virtual BNI."),
-        CardVariant("cimb", "cimb", "Kartu Debit CIMB Niaga", "Kartu debit virtual CIMB Niaga."),
-        CardVariant("danamon", "danamon", "Kartu Debit Danamon", "Kartu debit virtual Danamon."),
-        CardVariant("lainnya", "lainnya", "Kartu Debit Umum", "Untuk bank yang belum ada di daftar.")
-    )
-
-    fun bank(id: String): Bank? = banks.firstOrNull { it.id == id }
-    fun variant(id: String): CardVariant? = variants.firstOrNull { it.id == id }
-    fun variantsOf(bankId: String): List<CardVariant> = variants.filter { it.bankId == bankId }
+    /** Cari id gambar kartu dari nama bank yang tersimpan di database. */
+    fun assetFor(bank: String): String? =
+        presets.firstOrNull { it.label.equals(bank, ignoreCase = true) }?.assetId
 }
