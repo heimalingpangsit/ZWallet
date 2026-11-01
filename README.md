@@ -25,6 +25,19 @@ Aplikasi Android pencatat saldo, pemasukan, dan pengeluaran per kartu/dompet. Di
 
 Di **Kartu tersimpan** (tab Wallet) tekan **+ Tambah**, pilih bank / e-wallet, dan gambar kartu bank tersebut langsung muncul otomatis. Gambar dibaca dari `app/src/main/assets/cards/<id>.png` (bca, mandiri, bri, bni, cimb, danamon). Daftar bank diatur di `data/CardCatalog.kt`.
 
+## ZWallet Assistant (offline)
+
+Tab **Assistant** adalah chat pintar yang berjalan sepenuhnya di dalam aplikasi: tanpa OpenAI/API, tanpa server AI, tanpa internet. Jawaban dihitung langsung dari data transaksi di perangkat.
+
+- Paham bahasa sehari-hari ("duit gue abis berapa sih bulan ini?"), singkatan, dan typo kecil.
+- Pertanyaan: saldo, total pemasukan/pengeluaran, transaksi terbesar/terkecil, kartu paling boros, kategori, jumlah transaksi, bandingin periode, analisis, prediksi akhir bulan, rata-rata, tips hemat, dan pencarian ("kapan terakhir gue beli kopi?").
+- Periode: hari ini, kemarin, minggu/bulan/tahun ini & lalu, nama bulan, "7 hari terakhir", dll.
+- Kategori ditebak dari keterangan transaksi (mis. "makan siang", "bensin"). Kode: `assistant/Categories.kt`.
+- Pertanyaan lanjutan nyambung ("kalau bulan lalu?").
+- Jawaban punya rincian transaksi yang bisa di-tap, ada quick prompt, dan riwayat chat tersimpan lokal (SharedPreferences).
+
+Kode ada di `app/src/main/java/com/zwallet/app/assistant/` dan `ui/AssistantScreen.kt`.
+
 ## Menjalankan project
 
 1. Download atau clone repository ini.

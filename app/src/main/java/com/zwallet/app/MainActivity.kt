@@ -47,7 +47,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.zwallet.app.data.*
+import com.zwallet.app.ui.AssistantScreen
 import com.zwallet.app.ui.CardImage
+import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -231,7 +233,7 @@ fun WalletScreen(vm: WalletViewModel) {
     Scaffold(
         containerColor = Bg,
         floatingActionButton = {
-            FloatingActionButton(
+            if (tab != 1) FloatingActionButton(
                 onClick = { if (cards.isNotEmpty()) { selectedCard = cards.first(); showTransaction = true } else showAddCard = true },
                 containerColor = Gold, contentColor = OnGold
             ) { Icon(Icons.Rounded.Add, contentDescription = "Tambah transaksi") }
@@ -244,11 +246,15 @@ fun WalletScreen(vm: WalletViewModel) {
                     unselectedIconColor = Muted, unselectedTextColor = Muted
                 )
                 NavigationBarItem(selected = tab == 0, onClick = { tab = 0 }, colors = itemColors, icon = { Icon(Icons.Rounded.Wallet, null) }, label = { Text("Wallet") })
-                NavigationBarItem(selected = tab == 1, onClick = { tab = 1 }, colors = itemColors, icon = { Icon(Icons.Rounded.ArrowUpward, null) }, label = { Text("Aktivitas") })
+                NavigationBarItem(selected = tab == 1, onClick = { tab = 1 }, colors = itemColors, icon = { Icon(Icons.Rounded.AutoAwesome, null) }, label = { Text("Assistant") })
+                NavigationBarItem(selected = tab == 2, onClick = { tab = 2 }, colors = itemColors, icon = { Icon(Icons.Rounded.ArrowUpward, null) }, label = { Text("Aktivitas") })
             }
         }
     ) { padding ->
-        LazyColumn(
+        if (tab == 1) AssistantScreen(
+            cards = cards, transactions = transactions,
+            modifier = Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding).imePadding()
+        ) else LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 22.dp, bottom = 100.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -257,7 +263,7 @@ fun WalletScreen(vm: WalletViewModel) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text("ZWALLET", color = Gold, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 3.sp)
-                        Text(if (tab == 1) "Aktivitas" else "Ringkasan wallet", fontSize = 25.sp, fontWeight = FontWeight.Bold)
+                        Text(if (tab == 2) "Aktivitas" else "Ringkasan wallet", fontSize = 25.sp, fontWeight = FontWeight.Bold)
                     }
                     Text("OFFLINE", color = Green, fontSize = 10.sp, fontWeight = FontWeight.Bold,
                         modifier = Modifier.background(Surface2, RoundedCornerShape(30.dp)).padding(horizontal = 12.dp, vertical = 7.dp))
